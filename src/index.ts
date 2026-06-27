@@ -1,3 +1,4 @@
+import "./ws-polyfill.js";
 import { loadConfig } from "./config.js";
 import { createApp } from "./app.js";
 
