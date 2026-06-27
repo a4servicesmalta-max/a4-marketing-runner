@@ -17,9 +17,9 @@ export interface RunAgentResult { text: string; costUsd?: number; }
 
 export async function runAgent(
   input: RunAgentInput,
-  onChunk: (chunk: string) => void,
+  onChunk: (chunk: string) => void | Promise<void>,
 ): Promise<RunAgentResult> {
-  const allowedTools = ["Skill", "Read", "Write", "WebSearch", "WebFetch", ...(input.extraAllowedTools ?? [])];
+  const allowedTools = ["Skill", "Read", "Write", "Edit", "Glob", "Grep", "WebSearch", "WebFetch", ...(input.extraAllowedTools ?? [])];
   const system =
     `${input.rolePrompt}\n\nYou may ONLY use these marketing skills via the Skill tool: ${input.skills.join(", ")}.`;
 
@@ -35,7 +35,7 @@ export async function runAgent(
   })) {
     if (msg.type === "assistant") {
       for (const part of msg.message.content) {
-        if (part.type === "text" && part.text) { finalText += part.text; onChunk(part.text); }
+        if (part.type === "text" && part.text) { finalText += part.text; await onChunk(part.text); }
       }
     } else if (msg.type === "result" && msg.subtype === "success") {
       if (typeof msg.result === "string" && msg.result) finalText = msg.result;

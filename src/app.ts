@@ -34,11 +34,17 @@ export function createApp(cfg: Config) {
       try {
         await runAgent(
           { employeeId: emp.id, rolePrompt: emp.rolePrompt, skills: emp.skills, task: parsed.data.task, projectDir },
-          (chunk) => { void repo.appendOutput(runId, chunk); },
+          async (chunk) => { await repo.appendOutput(runId, chunk); },
         );
         await repo.finish(runId, "done");
       } catch (e) {
-        await repo.finish(runId, "error", e instanceof Error ? e.message : String(e));
+        // Guard the error-path status write: if finish() itself rejects, swallow it
+        // so a failed status write can't escape as an unhandled rejection.
+        try {
+          await repo.finish(runId, "error", e instanceof Error ? e.message : String(e));
+        } catch (finishErr) {
+          console.error("failed to write error status for run", runId, finishErr);
+        }
       }
     })();
   });

@@ -15,7 +15,7 @@ describe("runAgent", () => {
     const chunks: string[] = [];
     const result = await runAgent(
       { employeeId: "demand-gen", rolePrompt: "You are X.", skills: ["prospecting"], task: "Do a thing", projectDir: "/tmp/x" },
-      (c) => chunks.push(c),
+      (c) => { chunks.push(c); },
     );
     expect(chunks.join("")).toContain("Hello world");
     expect(result.text).toContain("Hello world");
