@@ -24,6 +24,11 @@ const cfg: Config = {
   SUPABASE_URL: "https://example.supabase.co",
   SUPABASE_SERVICE_ROLE_KEY: "dummy-service-role-key",
   RUNNER_SHARED_SECRET: SECRET,
+  IMAP_HOST: "imap.titan.email",
+  IMAP_PORT: 993,
+  INBOX_MAILBOX: "INBOX",
+  INBOX_POLL_MINUTES: 5,
+  INBOX_MAX_PER_CYCLE: 15,
 };
 
 // Drive the Express app over an ephemeral port with fetch; close after each test.

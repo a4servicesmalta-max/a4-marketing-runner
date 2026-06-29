@@ -4,6 +4,7 @@ import { requireSecret } from "./auth.js";
 import { getEmployee } from "./employees.js";
 import { makeRunsRepo } from "./runs.js";
 import { runAgent } from "./runAgent.js";
+import { pollInbox } from "./inbox/poll.js";
 import type { Config } from "./config.js";
 
 const RunBody = z.object({
@@ -19,6 +20,16 @@ export function createApp(cfg: Config) {
   const projectDir = process.cwd(); // runner/ holds vendored .claude
 
   app.get("/health", (_req, res) => res.json({ ok: true }));
+
+  // Manual Inbox→Tasks poll (secret-locked) — same logic the scheduler runs.
+  app.post("/inbox/poll", requireSecret(cfg.RUNNER_SHARED_SECRET), async (_req, res) => {
+    try {
+      const summary = await pollInbox(cfg);
+      res.json(summary);
+    } catch (e) {
+      res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
+    }
+  });
 
   app.post("/run", requireSecret(cfg.RUNNER_SHARED_SECRET), async (req, res) => {
     const parsed = RunBody.safeParse(req.body);
