@@ -5,6 +5,8 @@ import { getEmployee } from "./employees.js";
 import { makeRunsRepo } from "./runs.js";
 import { runAgent } from "./runAgent.js";
 import { pollInbox } from "./inbox/poll.js";
+import { runManager, runDueManagers } from "./managers/run.js";
+import { getManager, MANAGERS } from "./managers/playbooks.js";
 import type { Config } from "./config.js";
 
 const RunBody = z.object({
@@ -26,6 +28,23 @@ export function createApp(cfg: Config) {
     try {
       const summary = await pollInbox(cfg);
       res.json(summary);
+    } catch (e) {
+      res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
+    }
+  });
+
+  // Manual department-manager run (secret-locked). Body: { dept?, force? }.
+  // No dept → run all due today; dept → run that one (force ignores the once-a-day guard).
+  app.post("/managers/run", requireSecret(cfg.RUNNER_SHARED_SECRET), async (req, res) => {
+    const dept = typeof req.body?.dept === "string" ? req.body.dept : undefined;
+    const force = req.body?.force === true;
+    try {
+      if (dept) {
+        const mgr = getManager(dept);
+        if (!mgr) return res.status(404).json({ error: `unknown dept '${dept}' (use one of: ${MANAGERS.map((m) => m.id).join(", ")})` });
+        return res.json(await runManager(cfg, mgr, { force }));
+      }
+      res.json(await runDueManagers(cfg));
     } catch (e) {
       res.status(500).json({ error: e instanceof Error ? e.message : String(e) });
     }

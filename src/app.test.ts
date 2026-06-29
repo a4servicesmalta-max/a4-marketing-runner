@@ -29,6 +29,9 @@ const cfg: Config = {
   INBOX_MAILBOX: "INBOX",
   INBOX_POLL_MINUTES: 5,
   INBOX_MAX_PER_CYCLE: 15,
+  MANAGERS_ENABLED: true,
+  MANAGERS_TZ: "Europe/Malta",
+  MANAGER_RUN_HOUR: 7,
 };
 
 // Drive the Express app over an ephemeral port with fetch; close after each test.

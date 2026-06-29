@@ -14,6 +14,10 @@ const schema = z.object({
   INBOX_MAILBOX: z.string().default("INBOX"),
   INBOX_POLL_MINUTES: z.coerce.number().default(5),
   INBOX_MAX_PER_CYCLE: z.coerce.number().default(15),
+  // Department-manager daily task agents
+  MANAGERS_ENABLED: z.coerce.boolean().default(true),
+  MANAGERS_TZ: z.string().default("Europe/Malta"),
+  MANAGER_RUN_HOUR: z.coerce.number().default(7),
 });
 
 export type Config = z.infer<typeof schema>;
